@@ -35,7 +35,7 @@ export default function SortingHistory() {
   const deleteHistoryItem = async (id: string) => {
     try {
       setDeleting(id)
-      const response = await fetch(`/api/sorting-history/${id}`, {
+      const response = await fetch(`/api/sorting-history/delete?id=${id}`, {
         method: 'DELETE',
       })
 
