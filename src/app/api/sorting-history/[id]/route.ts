@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
-export async function DELETE(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+interface RouteContext {
+  params: {
+    id: string;
+  };
+}
+
+export async function DELETE(request: NextRequest, { params }: RouteContext) {
   try {
-    const id = context.params.id
+    const id = params.id;
     
     if (!id) {
       return NextResponse.json(
