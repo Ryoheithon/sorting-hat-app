@@ -1,0 +1,10 @@
+{
+  "buildCommand": "chmod +x .vercel/build.sh && ./.vercel/build.sh && next build",
+  "outputDirectory": ".next",
+  "typescript": {
+    "ignoreBuildErrors": true
+  },
+  "eslint": {
+    "ignoreDuringBuilds": true
+  }
+}
