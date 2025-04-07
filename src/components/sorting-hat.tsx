@@ -1,10 +1,99 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { 
+  useGLTF, 
+  Environment, 
+  ContactShadows,
+  useAnimations
+} from '@react-three/drei'
 import { motion } from 'framer-motion'
+import * as THREE from 'three'
+
+/**
+ * 3Dモデルを使った組み分け帽子コンポーネント
+ * マウスの動きに合わせて向きが変わり、クリックすると反応します
+ */
+function SortingHatModel(props: Record<string, unknown>) {
+  const groupRef = useRef<THREE.Group>(null!)
+  const { mouse } = useThree()
+  
+  // GLBモデルをロード
+  const { scene, animations } = useGLTF('/models/sorting-hat.glb')
+  const { actions } = useAnimations(animations, scene)
+  
+  // マウスに追従する動きを設定
+  useFrame((state) => {
+    if (groupRef.current) {
+      // マウス位置を-1〜1の範囲から適切な回転角度に変換
+      const targetRotationX = mouse.y * 0.5 // 上下の動き（ピッチ）
+      const targetRotationY = mouse.x * 0.8 // 左右の動き（ヨー）
+      
+      // 初期回転値（Y軸90度）を維持しながら、マウス移動による回転を加える
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(
+        groupRef.current.rotation.x,
+        targetRotationX,
+        0.0
+      )
+      
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(
+        groupRef.current.rotation.y,
+        Math.PI / 4 + targetRotationY, // 90度（π/2ラジアン）右回転 + マウス動き
+        0
+      )
+      
+      // 軽く呼吸するような上下の動き
+      groupRef.current.position.y = Math.sin(state.clock.getElapsedTime()) * 0.2 + (props.positionY as number || 0)
+    }
+  })
+
+  // モデルのマテリアルを設定
+  useEffect(() => {
+    // モデルのマテリアルを調整
+    scene.traverse((node) => {
+      if (node instanceof THREE.Mesh) {
+        // マテリアルの調整が必要な場合はここで行う
+        if (node.material) {
+          // 必要に応じてマテリアルの設定を調整
+          node.material.roughness = 0.7
+          node.material.metalness = 0.2
+          node.castShadow = true
+          node.receiveShadow = true
+        }
+      }
+    })
+    
+    // アニメーションがあれば再生
+    if (actions && Object.keys(actions).length > 0) {
+      // 最初のアニメーションを再生する
+      const firstAction = Object.values(actions)[0]
+      if (firstAction) {
+        firstAction.play()
+      }
+    }
+
+    // 初期回転を設定（Y軸90度右回転）
+    if (groupRef.current) {
+      groupRef.current.rotation.y = 0
+    }
+  }, [scene, actions])
+
+  return (
+    <group ref={groupRef} {...props}>
+      <primitive 
+        object={scene} 
+        scale={props.scale || 0.8} 
+        position={props.position || [0, 0, 0]}
+        rotation={[0, 4.6, 0]}
+      />
+    </group>
+  )
+}
 
 export default function SortingHat() {
-  const [modelScale, setModelScale] = useState(2.0) 
+  const [modelScale, setModelScale] = useState(2.0) // スケールを小さく調整
+  const [positionY] = useState(0) // 位置を調整
 
   // クリックハンドラ
   const handleCanvasClick = () => {
@@ -17,6 +106,9 @@ export default function SortingHat() {
     }, 500)
   }
 
+  // GLBモデルを事前に読み込む
+  useGLTF.preload('/models/sorting-hat.glb')
+
   return (
     <motion.div 
       className="relative w-80 h-80 mx-auto my-6 cursor-pointer"
@@ -25,30 +117,33 @@ export default function SortingHat() {
       transition={{ duration: 0.8 }}
       onClick={handleCanvasClick}
     >
-      <div className="w-full h-full flex justify-center items-center bg-amber-100 rounded-full shadow-lg">
-        <div className="w-3/4 h-3/4 bg-amber-800 rounded-t-full relative">
-          {/* 帽子の基本形 */}
-          <div className="absolute bottom-0 w-full h-10 bg-amber-900 border-t-2 border-amber-700"></div>
-          
-          {/* 帽子の装飾 */}
-          <div className="absolute top-10 w-full flex justify-center">
-            <div className="w-20 h-4 bg-amber-600 rotate-6"></div>
-          </div>
-          
-          {/* 「顔」のような部分 */}
-          <div className="absolute bottom-20 w-full flex justify-center">
-            <div className="w-16 h-8 bg-amber-700 flex justify-between items-center px-2 rounded-lg">
-              <div className="w-2 h-2 rounded-full bg-amber-400"></div>
-              <div className="w-2 h-2 rounded-full bg-amber-400"></div>
-            </div>
-          </div>
-          
-          {/* 「口」の部分 */}
-          <div className="absolute bottom-12 w-full flex justify-center">
-            <div className="w-10 h-2 bg-amber-900 rounded-full"></div>
-          </div>
-        </div>
-      </div>
+      <Canvas 
+        shadows 
+        camera={{ position: [0, 0, 6], fov: 40 }} // カメラ位置とFOVを調整
+        onClick={(e) => e.stopPropagation()}
+      >
+        <ambientLight intensity={0.5} />
+        <spotLight 
+          position={[5, 10, 7.5]} 
+          angle={0.15} 
+          penumbra={1} 
+          intensity={1} 
+          castShadow 
+          shadow-mapSize={[2048, 2048]}
+        />
+        <SortingHatModel 
+          scale={modelScale}
+          positionY={positionY}
+          position={[0, positionY, 0]} // 位置を調整
+        />
+        <ContactShadows 
+          position={[0, -1.8, 0]} // 影の位置も調整
+          opacity={0.4}
+          scale={5}
+          blur={2.5}
+        />
+        <Environment preset="sunset" />
+      </Canvas>
       
       {/* 帽子からのメッセージ */}
       <motion.div
