@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import NameForm from '@/components/name-form'
 import SortingHat from '@/components/sorting-hat'
 import SortingHistory from '@/components/sorting-history'
