@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { 
-  OrbitControls, 
   useGLTF, 
   Environment, 
   ContactShadows,
@@ -16,13 +15,13 @@ import * as THREE from 'three'
  * 3Dモデルを使った組み分け帽子コンポーネント
  * マウスの動きに合わせて向きが変わり、クリックすると反応します
  */
-function SortingHatModel(props: any) {
+function SortingHatModel(props: Record<string, unknown>) {
   const groupRef = useRef<THREE.Group>(null!)
   const { mouse } = useThree()
   
   // GLBモデルをロード
   const { scene, animations } = useGLTF('/models/sorting-hat.glb')
-  const { actions, mixer } = useAnimations(animations, scene)
+  const { actions } = useAnimations(animations, scene)
   
   // マウスに追従する動きを設定
   useFrame((state) => {
@@ -45,7 +44,7 @@ function SortingHatModel(props: any) {
       )
       
       // 軽く呼吸するような上下の動き
-      groupRef.current.position.y = Math.sin(state.clock.getElapsedTime()) * 0.2 + props.positionY
+      groupRef.current.position.y = Math.sin(state.clock.getElapsedTime()) * 0.2 + (props.positionY as number || 0)
     }
   })
 
@@ -93,19 +92,16 @@ function SortingHatModel(props: any) {
 }
 
 export default function SortingHat() {
-  const [hasClicked, setHasClicked] = useState(false)
   const [modelScale, setModelScale] = useState(2.0) // スケールを小さく調整
-  const [positionY, setPositionY] = useState(0) // 位置を調整
+  const [positionY] = useState(0) // 位置を調整
 
   // クリックハンドラ
   const handleCanvasClick = () => {
-    setHasClicked(true)
     // クリックエフェクト（拡大）
     setModelScale(prev => prev * 1.1)
     
     // 少し時間をおいて状態をリセット（連続クリックを可能にする）
     setTimeout(() => {
-      setHasClicked(false)
       setModelScale(1.6) // 元のスケールに戻す
     }, 500)
   }
@@ -157,7 +153,7 @@ export default function SortingHat() {
         transition={{ delay: 1, duration: 1 }}
       >
         <p className="text-amber-800 font-semibold italic">
-          "さあ、どの寮にしようかな...?"
+          &ldquo;さあ、どの寮にしようかな...?&rdquo;
         </p>
       </motion.div>
     </motion.div>
