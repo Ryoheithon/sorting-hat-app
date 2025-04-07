@@ -1,11 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase'
-import { nameSchema, HogwartsHouse, SortingResult } from '@/types'
+import { nameSchema, HogwartsHouse } from '@/types'
 import { NextRequest, NextResponse } from 'next/server'
-
-/**
- * ハリーポッターの寮の配列
- */
-const houses: HogwartsHouse[] = ['Gryffindor', 'Hufflepuff', 'Ravenclaw', 'Slytherin']
 
 /**
  * 組み分けAPIエンドポイント
@@ -59,8 +54,8 @@ export async function POST(request: NextRequest) {
     
     // 8名未満の寮だけを選択肢に入れる
     const availableHouses: HogwartsHouse[] = Object.entries(counts)
-      .filter(([_, count]) => count < 8)
-      .map(([house, _]) => house as HogwartsHouse)
+      .filter(([, count]) => count < 8)
+      .map(([house]) => house as HogwartsHouse)
     
     // 全ての寮が8名に達している場合はエラーを返す
     if (availableHouses.length === 0) {
