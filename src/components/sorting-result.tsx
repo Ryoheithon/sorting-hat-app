@@ -126,7 +126,7 @@ export default function SortingResultDisplay({ resultId }: SortingResultProps) {
         animate={{ opacity: 1 }}
         transition={{ delay: 1.8, duration: 0.5 }}
       >
-        "君は{houseJapaneseName}で素晴らしい魔法使いになるだろう！さあ、この寮の色のサイリウムを取りたまえ。"
+        &ldquo;君は{houseJapaneseName}で素晴らしい魔法使いになるだろう！さあ、この寮の色のサイリウムを取りたまえ。&rdquo;
       </motion.p>
     </motion.div>
   )
