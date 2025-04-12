@@ -2,9 +2,11 @@
 
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import SortingResultDisplay from '@/components/sorting-result'
 
-export default function ResultPage() {
+// 実際のページコンテンツをラップするコンポーネント
+function ResultPageContent() {
   const searchParams = useSearchParams()
   const resultId = searchParams.get('id')
 
@@ -40,5 +42,18 @@ export default function ResultPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+// サスペンスでラップしたメインコンポーネント
+export default function ResultPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-b from-amber-50 to-amber-200">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-amber-700"></div>
+      </div>
+    }>
+      <ResultPageContent />
+    </Suspense>
   )
 }
