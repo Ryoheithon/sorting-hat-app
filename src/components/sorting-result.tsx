@@ -28,7 +28,8 @@ export default function SortingResultDisplay({ resultId }: SortingResultProps) {
 
     const fetchResult = async () => {
       try {
-        const response = await fetch(`/api/sorting-history`)
+        // 専用のAPIエンドポイントを使用してIDで直接結果を取得
+        const response = await fetch(`/api/sorting-history/${resultId}`)
         
         if (!response.ok) {
           const errorData = await response.json()
@@ -36,15 +37,7 @@ export default function SortingResultDisplay({ resultId }: SortingResultProps) {
         }
 
         const data = await response.json()
-
-        // 特定のIDに一致する結果を見つける
-        const foundResult = data.data.find((item: SortingResult) => item.id === resultId)
-        
-        if (!foundResult) {
-          throw new Error('組み分け結果が見つかりませんでした')
-        }
-        
-        setResult(foundResult)
+        setResult(data.data)
       } catch (err) {
         console.error('Error fetching result:', err)
         setError(err instanceof Error ? err.message : '予期せぬエラーが発生しました')
