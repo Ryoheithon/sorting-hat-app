@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * 組み分けAPIエンドポイント
- * ユーザー名を受け取り、8名未満の寮からランダムに寮を選んで結果を保存します
+ * ユーザー名を受け取り、12名未満の寮からランダムに寮を選んで結果を保存します
  */
 export async function POST(request: NextRequest) {
   try {
@@ -52,12 +52,12 @@ export async function POST(request: NextRequest) {
       }
     })
     
-    // 8名未満の寮だけを選択肢に入れる
+    // 12名未満の寮だけを選択肢に入れる
     const availableHouses: HogwartsHouse[] = Object.entries(counts)
-      .filter(([, count]) => count < 8)
+      .filter(([, count]) => count < 12)
       .map(([house]) => house as HogwartsHouse)
     
-    // 全ての寮が8名に達している場合はエラーを返す
+    // 全ての寮が12名に達している場合はエラーを返す
     if (availableHouses.length === 0) {
       return NextResponse.json(
         { error: '全ての寮がいっぱいです。管理者に連絡してください。' },
