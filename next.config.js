@@ -11,11 +11,6 @@ const nextConfig = {
   },
   // 末尾のスラッシュを削除
   trailingSlash: false,
-  // 実験的機能の設定
-  experimental: {
-    // モジュール解決の改善
-    esmExternals: 'loose',
-  },
   // リダイレクト設定
   async redirects() {
     return [
